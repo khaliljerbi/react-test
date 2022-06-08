@@ -207,20 +207,22 @@ const MoviesList: FC<MoviesListProps> = ({ query }) => {
             </Grid>
           ))}
         </Grid>
-        <Pagination
-          onChange={(_, page) => setPage(page)}
-          count={10}
-          variant="outlined"
-          shape="rounded"
-          sx={{
-            pt: 2,
-            pb: 2,
-            button: {
-              color: "#D8D8D8",
-              borderColor: "#D8D8D8",
-            },
-          }}
-        />
+        {movies.length > 10 && (
+          <Pagination
+            onChange={(_, page) => setPage(page)}
+            count={10}
+            variant="outlined"
+            shape="rounded"
+            sx={{
+              pt: 2,
+              pb: 2,
+              button: {
+                color: "#D8D8D8",
+                borderColor: "#D8D8D8",
+              },
+            }}
+          />
+        )}
       </Stack>
     </Stack>
   );

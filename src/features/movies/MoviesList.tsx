@@ -7,8 +7,10 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  TextField,
 } from "@mui/material";
 import axios from "axios";
+import DatePicker from "react-datepicker";
 import MovieCard from "./MovieCard";
 import { MovieFromApi } from "../../types/movie.type";
 
@@ -19,14 +21,25 @@ interface MoviesListProps {
 const MoviesList: FC<MoviesListProps> = ({ query }) => {
   const [movies, setMovies] = useState([]);
   const [page, setPage] = useState(1);
-  const [order, setOrder] = useState("");
+  const [order, setOrder] = useState("-1");
+  const [genre, setGenre] = useState([]);
+  const [filter, setFilter] = useState<{
+    genre?: number;
+    year?: Date;
+  } | null>(null);
 
   useEffect(() => {
     const getMovies = async () => {
       const res = await axios.get(
         `${process.env.REACT_APP_BASE_API}/discover/movie?api_key=${
           process.env.REACT_APP_API_KEY
-        }&page=${page}${order ? `&sort_by=${order}` : ""}`
+        }&page=${page}${order ? `&sort_by=${order}` : ""}
+        ${
+          filter?.year
+            ? `&primary_release_year=${+filter.year.getFullYear()}`
+            : ""
+        }
+        ${filter?.genre ? `&with_genres=${filter.genre}` : ""}`
       );
       setMovies(res.data.results);
     };
@@ -43,10 +56,24 @@ const MoviesList: FC<MoviesListProps> = ({ query }) => {
     } else {
       getMovies();
     }
-  }, [page, order, query]);
+  }, [page, order, query, filter]);
+
+  useEffect(() => {
+    const getGenres = async () => {
+      const res = await axios.get(
+        `${process.env.REACT_APP_BASE_API}/genre/movie/list?api_key=${process.env.REACT_APP_API_KEY}`
+      );
+      setGenre(res.data.genres);
+    };
+    getGenres();
+  }, []);
 
   const handleSetOrder = (e: SelectChangeEvent<string>) => {
     setOrder(e.target.value);
+  };
+
+  const handleSelectGenre = (e: SelectChangeEvent<number>) => {
+    setFilter({ ...filter, genre: e.target.value as number });
   };
   return (
     <Stack direction="column" sx={{ p: 5 }}>
@@ -54,12 +81,15 @@ const MoviesList: FC<MoviesListProps> = ({ query }) => {
         Tous les films
       </Typography>
       <Stack direction={{ xs: "column", md: "row" }} pb={5}>
-        <Grid container mt={2}>
+        <Grid container mt={2} spacing={2}>
           <Grid
+            item
             container
             justifyContent="center"
             alignItems="center"
             spacing={1}
+            xs={12}
+            md={6}
           >
             <Grid item xs={2} md={1}>
               <Typography color="#586E94">Trier par:</Typography>
@@ -78,14 +108,79 @@ const MoviesList: FC<MoviesListProps> = ({ query }) => {
                   },
                 }}
               >
-                <MenuItem value={""}></MenuItem>
+                <MenuItem value={"-1"} disabled>
+                  Sélectionner l'ordre
+                </MenuItem>
                 <MenuItem value={"original_title.asc"}>
-                  Ordre alphabétique ASC
+                  Ordre alphabétique (asc)
                 </MenuItem>
                 <MenuItem value={"original_title.desc"}>
-                  Ordre alphabétique DESC
+                  Ordre alphabétique (desc)
                 </MenuItem>
               </Select>
+            </Grid>
+          </Grid>
+          <Grid
+            container
+            item
+            justifyContent="center"
+            alignItems="center"
+            spacing={1}
+            xs={12}
+            md={6}
+          >
+            <Grid item xs={2} md={1}>
+              <Typography color="#586E94">Filtrer par:</Typography>
+            </Grid>
+            <Grid item xs={5} md={3}>
+              <Select
+                fullWidth
+                value={filter?.genre || -1}
+                onChange={handleSelectGenre}
+                sx={{
+                  color: "#586E94",
+                  border: "1px solid #586E94",
+                  borderRadius: "20px",
+                  "& .MuiSvgIcon-root": {
+                    color: "#586E94",
+                  },
+                }}
+              >
+                <MenuItem value={-1} disabled>
+                  Genre
+                </MenuItem>
+                <MenuItem value={""}>Tous</MenuItem>
+                {genre.map((genre: { id: number; name: string }) => (
+                  <MenuItem key={genre.id} value={genre.id}>
+                    {genre.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+            <Grid item xs={5} md={3}>
+              <DatePicker
+                onChange={(date: Date) => {
+                  setFilter({ ...filter, year: date });
+                }}
+                placeholderText="Année"
+                showYearPicker
+                selected={filter?.year}
+                dateFormat="yyyy"
+                customInput={
+                  <TextField
+                    fullWidth
+                    placeholder="Année"
+                    label=""
+                    InputProps={{
+                      style: {
+                        color: "#586E94",
+                        border: "1px solid #586E94",
+                        borderRadius: "20px",
+                      },
+                    }}
+                  />
+                }
+              />
             </Grid>
           </Grid>
         </Grid>

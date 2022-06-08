@@ -14,6 +14,9 @@ const MovieCard: FC<MovieCardProps> = ({ title, image, releaseDate }) => {
         width="138px"
         height="200px"
         style={{ borderRadius: "10px", flexShrink: 0 }}
+        onError={(e) => {
+          e.currentTarget.src = "/no_image.png";
+        }}
       />
       <Typography
         sx={{

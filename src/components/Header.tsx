@@ -20,7 +20,6 @@ const Header: FC<HeaderProps> = ({ query, setQuery }) => {
     >
       <img src="/logo.svg" alt="logo_moviefinder" />
       <TextField
-        sx={{ color: "white" }}
         value={query}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           startTrasition(() => {
